@@ -28,29 +28,38 @@ chatForm.addEventListener('submit', async (event) => {
   // Show a loading message
   responseContainer.textContent = 'Thinking...';
 
-  // Send a POST request to the OpenAI API
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: conversation
-    })
-  });
+  try {
+    // Send a POST request to the OpenAI API
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: conversation,
+        max_completion_tokens: 800,
+        temperature: 0.5,
+        frequency_penalty: 0.8,
+      })
+    });
 
-  // Parse the response data
-  const result = await response.json();
-  const aiMessage = result.choices && result.choices[0] && result.choices[0].message && result.choices[0].message.content
-    ? result.choices[0].message.content
-    : 'Sorry, I could not get a response.';
+    // Parse the response data
+    const result = await response.json();
+    const aiMessage = result.choices && result.choices[0] && result.choices[0].message && result.choices[0].message.content
+      ? result.choices[0].message.content
+      : 'Sorry, I could not get a response.';
 
-  // Add the AI's response to the conversation history
-  conversation.push({ role: 'assistant', content: aiMessage });
+    // Add the AI's response to the conversation history
+    conversation.push({ role: 'assistant', content: aiMessage });
 
-  // Display the AI's response, preserving line breaks
-  responseContainer.textContent = '';
-  responseContainer.innerText = aiMessage;
+    // Display the AI's response, preserving line breaks
+    responseContainer.textContent = '';
+    responseContainer.innerText = aiMessage;
+  } catch (error) {
+    // Log the error and show a user-friendly message
+    console.error('API request failed:', error);
+    responseContainer.textContent = 'Sorry, something went wrong. Please try again.';
+  }
 });
